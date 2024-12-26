@@ -1,0 +1,25 @@
+// invariants of suffix trees
+// leafs
+// 1. once a leaf node, always a leaf node, because we are unable to insert nodes beyond a leaf.
+// 2. leaf nodes never have suffix links, because we never need to insert nodes beyond a leaf.
+
+// active
+// 1. (active_node, active_char, active_len) points to the next position to check for the new character.
+// 2. active_len is always >= 0
+
+// suffix links
+// 1. suffix links connects this node to a node whose path is 1 char less from the front.
+// 2. if the string representing the path to this node has more than 1 char and the node is not a leaf,
+//    it must have a suffix link.
+// 3. suppose a node splits with one starting char 'a', then the suffix link node must have a child with starting
+//    char of 'a'. This is because the path splits, e.g aab->(abc, xyz), then going down ab, must also split into
+//    at least (abc, xyz)
+
+//
+// 1. as we insert nodes due to match fail, active_len only decreases
+// 2. active_len only increases on a match success
+// 3. if the 1st insertion does not split an edge, subsequent insertions do not split edge too,
+//    as active_len is 0
+// 4. everytime we take a suffix link, the length of the 'prefix' match decreases by 1, so only 2
+//    things occur: active_len decreases by 1, or we take a suffix link.
+//
