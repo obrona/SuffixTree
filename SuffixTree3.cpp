@@ -3,7 +3,7 @@ using namespace std;
 
 struct Node {
     int l, r = -1;
-    Node *slink;
+    Node *slink = nullptr;
     unordered_map<char, Node*> edges;
 
     Node() {}
@@ -60,15 +60,28 @@ struct SuffixTree {
         char c = str[ptr];
         if (active_len == 0) {
             if (active_node->edges.count(c) == 0) return false;
+
+            Node *edge = active_node->edges[c];
             active_char = c;
             active_len = 1;
+            if (edge->get_len(end_ptr) == 1) {
+                active_node = edge;
+                active_len = 0;
+            }
+
         } else {
             Node *edge = active_node->edges[active_char];
             if (str[edge->l + active_len] != c) return false;
+            
             active_len ++;
+            if (edge->get_len(end_ptr) == active_len) {
+                active_node = edge;
+                active_len = 0;
+            }
+
         }
         
-        walk_down(active_node->edges[active_char]->l);
+        //walk_down(active_node->edges[active_char]->l);
         return true;
     }
 
@@ -99,18 +112,26 @@ struct SuffixTree {
             end_ptr ++;
             remainder ++;
 
+            
+            Node *prev_inserted = nullptr;
             while (remainder > 0) {
                 if (update_active(i)) break;
 
-                Node *inserted = insert(i, nullptr);
+                int prev_l = (active_len == 0) ? -1 : active_node->edges[active_char]->l;
+                prev_inserted = insert(i, prev_inserted);
                 if (active_node == root) {
                     active_len = max(0, active_len - 1);
-                    active_char = (active_len == 0) ? '#' : str[active_node->edges[active_char]->l + 1];
+                    active_char = (active_len == 0) ? '#' : str[prev_l + 1];
+                    walk_down(prev_l + 1);
                 } else {
-                    active_node = (active_node->slink == nullptr) ? root : active_node->slink; 
+                    active_node = (active_node->slink == nullptr) ? root : active_node->slink;
+                    walk_down(prev_l);
                 }
-                if (active_len > 0) walk_down(active_node->edges[active_char]->l);
+                
                 remainder --;
+                
+                
+               
             }
         }
     }
@@ -125,8 +146,15 @@ struct SuffixTree {
     }
 
     void print_tree() {
-        cout << root->edges.size() << endl;
+        //cout << root->edges.size() << endl;
         root->print('#', 0);
+    }
+
+    void print_active() {
+        cout << active_node << endl;
+        cout << active_char << endl;
+        cout << active_len << endl;
+        cout << remainder << endl;
     }
 
     
@@ -134,8 +162,9 @@ struct SuffixTree {
 
 // 'aabaab$' is the big problem
 int main() {
-    string s = "aabaab$";
+    string s = "AaAaA$";
     SuffixTree st(s);
     st.print_tree();
+    //st.print_active();
     cout << st.count_repeated_substrings(st.root) << endl;
 }
