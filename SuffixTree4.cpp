@@ -1,3 +1,7 @@
+// The correct one
+// Finally I got a CORRECT working implementation of Ukkonen algorithm
+
+
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -40,26 +44,31 @@ struct SuffixTree {
     // move active node.
     // l is the starting index of str, with active_len the length of the substring we are referencing
     // we do not need to worry about exceeding a leaf node, this is not possible
-    // as active is the like the prefix of some suffix we ar matching, and the pos to match cannot exceed end_ptr
+    // as active is the like the prefix of some suffix we are matching, and the pos to match cannot exceed end_ptr
     void walk_down(int l) {
         if (active_len == 0) return;
         
-        while (1) {
+        while (active_len > 0) {
             Node *next = active_node->edges[active_char];
             int len = next->get_len(end_ptr);
 
             if (len > active_len) break;
             active_node = next;
-            active_char = str[l + len];
             active_len -= len;
+            active_char = (active_len == 0) ? '#' : str[l + len];
+            l += len;
+            
+            
         }
     }
 
     // check if we can match str[ptr]
-    bool update_active(int ptr) {
+    bool update_active(int ptr, Node *prev) {
         char c = str[ptr];
         if (active_len == 0) {
+            if (prev != nullptr) prev->slink = active_node; // we found a path to the node of 1 char removed suffix
             if (active_node->edges.count(c) == 0) return false;
+
 
             Node *edge = active_node->edges[c];
             active_char = c;
@@ -71,7 +80,10 @@ struct SuffixTree {
 
         } else {
             Node *edge = active_node->edges[active_char];
-            if (str[edge->l + active_len] != c) return false;
+            if (str[edge->l + active_len] != c) return false; // will end here, cannot match, as path must diverge
+                                                              // consider abcdeey
+                                                              //           bcdeex x is the char we looking for
+                                                              // but we must have bcdeey 
             
             active_len ++;
             if (edge->get_len(end_ptr) == active_len) {
@@ -88,6 +100,7 @@ struct SuffixTree {
 
     Node* insert(int ptr, Node *to_link) {
         if (active_len == 0) {
+            if (to_link != nullptr) to_link->slink = active_node;
             Node *n = new Node(ptr, -1);
             active_node->edges[str[ptr]] = n;
             return n;
@@ -115,7 +128,7 @@ struct SuffixTree {
             
             Node *prev_inserted = nullptr;
             while (remainder > 0) {
-                if (update_active(i)) break;
+                if (update_active(i, prev_inserted)) break;
 
                 int prev_l = (active_len == 0) ? -1 : active_node->edges[active_char]->l;
                 prev_inserted = insert(i, prev_inserted);
@@ -159,10 +172,8 @@ struct SuffixTree {
 
     
 };
-
-// 'aabaab$' is the big problem
 int main() {
-    string s = "aabaaab";
+    string s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$";
     SuffixTree st(s);
     st.print_tree();
     st.print_active();
