@@ -10,8 +10,11 @@
 // suffix links
 // 1. suffix links connects this node to a node whose path is 1 char less from the front.
 // 2. if the string representing the path to this node has more than 1 char and the node is not a leaf,
-//    it must have a suffix link.
-// 3. suppose a node splits with one starting char 'a', then the suffix link node must have a child with starting
+//    it must have a suffix link. Must maintain this invariant
+// 3. It could be after creating path for eg abcdab, currently matching x, we go down to bcdab, which ends at a node, 
+//    (active_len = 0) then this node has x as an edge, we have to connect the suffix link, 
+//    even though we do not insert any new char
+// 4. suppose a node splits with one starting char 'a', then the suffix link node must have a child with starting
 //    char of 'a'. This is because the path splits, e.g aab->(abc, xyz), then going down ab, must also split into
 //    at least (abc, xyz)
 

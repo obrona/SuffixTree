@@ -82,7 +82,7 @@ struct SuffixTree {
             Node *edge = active_node->edges[active_char];
             if (str[edge->l + active_len] != c) return false; // will end here, cannot match, as path must diverge
                                                               // consider abcdeey
-                                                              //           bcdeex x is the char we looking for
+                                                              //           bcdeex, x is the char we looking for
                                                               // but we must have bcdeey 
             
             active_len ++;
@@ -173,7 +173,7 @@ struct SuffixTree {
     
 };
 int main() {
-    string s = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$";
+    string s = "aabaaab$";
     SuffixTree st(s);
     st.print_tree();
     st.print_active();
